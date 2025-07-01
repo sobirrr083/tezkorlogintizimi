@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Google bilan Kirish</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            background: linear-gradient(45deg, #4285f4, #34a853, #fbbc05, #ea4335);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid #dadce0;
+            border-radius: 12px;
+            padding: 12px 20px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 500;
+            color: #3c4043;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .google-btn:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: #4285f4;
+            transform: translateY(-2px);
+        }
+
+        .google-btn:active {
+            transform: translateY(0);
+        }
+
+        .google-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+        }
+
+        .user-info {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .user-info.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 3px solid #4285f4;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .user-email {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .logout-btn {
+            background: #ea4335;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #d33b2c;
+        }
+
+        .error-message {
+            background: #ffeaea;
+            color: #d8000c;
+            border: 1px solid #d8000c;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            margin-left: 10px;
+        }
+
+        .loading.show {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4285f4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .config-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        .config-info strong {
+            color: #533f03;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">G</div>
+        <h1>Kirish</h1>
+        <p class="subtitle">Google hisobingiz bilan kiring</p>
+
+        <!-- Firebase konfiguratsiya haqida ma'lumot -->
+        <div class="config-info">
+            <strong>Muhim:</strong> Firebase loyihangizni sozlash uchun quyidagi konfiguratsiyani o'zingiznikiga almashtiring.
+        </div>
+
+        <button class="google-btn" id="loginBtn">
+            <svg class="google-icon" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google bilan kirish
+            <div class="loading" id="loading"></div>
+        </button>
+
+        <div class="user-info" id="userInfo">
+            <img class="user-avatar" id="userAvatar" src="" alt="User Avatar">
+            <div class="user-name" id="userName"></div>
+            <div class="user-email" id="userEmail"></div>
+            <button class="logout-btn" id="logoutBtn">Chiqish</button>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Firebase konfiguratsiyasi - Bu yerda o'zingizning Firebase loyihangiz ma'lumotlarini kiriting
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getAuth, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            signOut, 
+            onAuthStateChanged 
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // Firebase konfiguratsiyasi - BUNI O'ZINGIZNIKIGA ALMASHTIRING!
+        const firebaseConfig = {
+        apiKey: "AIzaSyBxIpLY5WasiSIlDL4japBLnnXRwOLUKEQ",
+       authDomain: "tezkor-quiz-bbe3c.firebaseapp.com",
+       projectId: "tezkor-quiz-bbe3c",
+        storageBucket: "tezkor-quiz-bbe3c.firebasestorage.app",
+        messagingSenderId: "143161522496",
+        appId: "1:143161522496:web:252108ace3a4c19f35e2a5"
+        };
+
+        // Firebase ni ishga tushirish
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // DOM elementlar
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfo = document.getElementById('userInfo');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const userEmail = document.getElementById('userEmail');
+        const errorMessage = document.getElementById('errorMessage');
+        const loading = document.getElementById('loading');
+
+        // Xato xabarini ko'rsatish
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // Loading holatini boshqarish
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loading.classList.add('show');
+                loginBtn.disabled = true;
+                loginBtn.style.opacity = '0.6';
+            } else {
+                loading.classList.remove('show');
+                loginBtn.disabled = false;
+                loginBtn.style.opacity = '1';
+            }
+        }
+
+        // Foydalanuvchi ma'lumotlarini ko'rsatish
+        function displayUserInfo(user) {
+            userAvatar.src = user.photoURL || 'https://via.placeholder.com/60';
+            userName.textContent = user.displayName || 'Noma\'lum foydalanuvchi';
+            userEmail.textContent = user.email || '';
+            
+            userInfo.classList.add('show');
+            loginBtn.style.display = 'none';
+        }
+
+        // Foydalanuvchi ma'lumotlarini yashirish
+        function hideUserInfo() {
+            userInfo.classList.remove('show');
+            loginBtn.style.display = 'flex';
+        }
+
+        // Google bilan kirish
+        async function signInWithGoogle() {
+            try {
+                setLoading(true);
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                console.log('Muvaffaqiyatli kirildi:', user);
+            } catch (error) {
+                console.error('Kirish xatosi:', error);
+                let errorMsg = 'Kirish paytida xato yuz berdi.';
+                
+                switch (error.code) {
+                    case 'auth/popup-closed-by-user':
+                        errorMsg = 'Kirish oynasi yopildi.';
+                        break;
+                    case 'auth/popup-blocked':
+                        errorMsg = 'Popup bloklangan. Brauzer sozlamalarini tekshiring.';
+                        break;
+                    case 'auth/cancelled-popup-request':
+                        errorMsg = 'Kirish bekor qilindi.';
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMsg = 'Internet aloqasini tekshiring.';
+                        break;
+                    default:
+                        errorMsg = error.message;
+                }
+                
+                showError(errorMsg);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Chiqish
+        async function signOutUser() {
+            try {
+                await signOut(auth);
+                console.log('Muvaffaqiyatli chiqildi');
+            } catch (error) {
+                console.error('Chiqish xatosi:', error);
+                showError('Chiqish paytida xato yuz berdi.');
+            }
+        }
+
+        // Foydalanuvchi holatini kuzatish
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                displayUserInfo(user);
+            } else {
+                hideUserInfo();
+            }
+        });
+
+        // Event listenerlar
+        loginBtn.addEventListener('click', signInWithGoogle);
+        logoutBtn.addEventListener('click', signOutUser);
+
+        // Firebase konfiguratsiya xatosi tekshiruvi
+        if (firebaseConfig.apiKey === "sizning-api-key") {
+            showError('Firebase konfiguratsiyasini o\'zgartiring! Kodda ko\'rsatilgan joyga o\'zingizning Firebase loyiha ma\'lumotlarini kiriting.');
+        }
+    </script>
+</body>
+</html>
